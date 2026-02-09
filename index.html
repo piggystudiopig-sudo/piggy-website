@@ -1,0 +1,556 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PIGGY ($PIGGY) | The Meme Reserve Currency</title>
+    
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
+    <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;500;700;900&family=Titan+One&display=swap" rel="stylesheet">
+
+    <script src="https://unpkg.com/lucide@latest"></script>
+
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        heading: ['"Titan One"', 'cursive'],
+                        body: ['"Outfit"', 'sans-serif'],
+                    },
+                    colors: {
+                        'piggy-gold': '#FFD700',
+                        'piggy-dark-gold': '#B8860B',
+                        'piggy-pink': '#FF69B4',
+                        'piggy-black': '#0a0a0a',
+                        'piggy-card': '#141414',
+                    },
+                    backgroundImage: {
+                        'gold-gradient': 'linear-gradient(135deg, #FFD700 0%, #FFA500 100%)',
+                        'pink-gradient': 'linear-gradient(135deg, #FF69B4 0%, #FF1493 100%)',
+                    },
+                    animation: {
+                        'float': 'float 6s ease-in-out infinite',
+                        'bounce-slow': 'bounce 3s infinite',
+                    },
+                    keyframes: {
+                        float: {
+                            '0%, 100%': { transform: 'translateY(0)' },
+                            '50%': { transform: 'translateY(-20px)' },
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        /* CUSTOM STYLES */
+        body {
+            background-color: #050505;
+            color: white;
+            overflow-x: hidden;
+        }
+
+        /* Coin Rain Animation */
+        .coin-rain {
+            position: fixed;
+            top: -10vh;
+            width: 20px;
+            height: 20px;
+            background: #FFD700;
+            border-radius: 50%;
+            border: 2px solid #B8860B;
+            z-index: -1;
+            opacity: 0.3;
+            animation: fall linear forwards;
+        }
+        .coin-rain::before {
+            content: '$';
+            position: absolute;
+            top: 50%; left: 50%;
+            transform: translate(-50%, -50%);
+            color: #B8860B;
+            font-weight: bold;
+            font-size: 12px;
+        }
+
+        @keyframes fall {
+            to { transform: translateY(110vh) rotate(360deg); }
+        }
+
+        /* Glass Cards */
+        .glass-card {
+            background: rgba(20, 20, 20, 0.8);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 215, 0, 0.1);
+            border-radius: 24px;
+            box-shadow: 0 10px 30px -10px rgba(0,0,0,0.5);
+            transition: all 0.3s ease;
+        }
+        .glass-card:hover {
+            border-color: var(--piggy-gold);
+            transform: translateY(-5px);
+            box-shadow: 0 20px 40px -10px rgba(255, 215, 0, 0.15);
+        }
+
+        /* Text Gradient */
+        .text-gradient {
+            background: linear-gradient(to right, #FFD700, #FF69B4);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        /* Buttons */
+        .btn-primary {
+            background: linear-gradient(90deg, #FFD700, #FFA500);
+            color: black;
+            font-weight: 900;
+            text-transform: uppercase;
+            padding: 12px 30px;
+            border-radius: 50px;
+            transition: transform 0.2s, box-shadow 0.2s;
+            box-shadow: 0 4px 15px rgba(255, 215, 0, 0.4);
+        }
+        .btn-primary:hover {
+            transform: scale(1.05);
+            box-shadow: 0 6px 20px rgba(255, 215, 0, 0.6);
+        }
+
+        .btn-secondary {
+            background: transparent;
+            border: 2px solid #FF69B4;
+            color: #FF69B4;
+            font-weight: 700;
+            padding: 12px 30px;
+            border-radius: 50px;
+            transition: all 0.3s;
+        }
+        .btn-secondary:hover {
+            background: #FF69B4;
+            color: white;
+        }
+
+        /* FAQ Accordion */
+        .faq-content {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.3s ease-out;
+        }
+        .faq-item.active .faq-content {
+            max-height: 200px; /* Adjust if needed */
+        }
+        .faq-item.active .faq-icon {
+            transform: rotate(180deg);
+        }
+
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar { width: 10px; }
+        ::-webkit-scrollbar-track { background: #0a0a0a; }
+        ::-webkit-scrollbar-thumb { background: #333; border-radius: 5px; }
+        ::-webkit-scrollbar-thumb:hover { background: #FFD700; }
+    </style>
+</head>
+<body class="font-body selection:bg-piggy-gold selection:text-black">
+
+    <div id="coin-container"></div>
+
+    <nav class="fixed w-full z-50 transition-all duration-300 py-4 px-4 bg-black/80 backdrop-blur-md border-b border-white/5">
+        <div class="container mx-auto flex justify-between items-center">
+            <a href="#" class="flex items-center gap-3 group">
+                <img src="logo.png" alt="Piggy Logo" class="w-12 h-12 rounded-full border-2 border-piggy-gold group-hover:rotate-12 transition duration-300 shadow-[0_0_15px_#FFD700]">
+                <span class="font-heading text-2xl tracking-wide text-white group-hover:text-piggy-gold transition">PIGGY</span>
+            </a>
+            
+            <div class="hidden lg:flex gap-8 items-center font-bold text-gray-400 text-sm tracking-widest uppercase">
+                <a href="#about" class="hover:text-piggy-gold transition">About</a>
+                <a href="#tokenomics" class="hover:text-piggy-gold transition">Tokenomics</a>
+                <a href="#cashback" class="hover:text-piggy-pink transition">Cashback</a>
+                <a href="#roadmap" class="hover:text-piggy-gold transition">Roadmap</a>
+            </div>
+
+            <div class="flex items-center gap-4">
+                <a href="https://axiom.trade/meme/DfXEY3Kroxaeu3We9ECBTVP7mT6zT1jegwUyDoqSJ3bo?chain=sol" target="_blank" class="btn-primary flex items-center gap-2">
+                    <i data-lucide="shopping-cart" class="w-4 h-4"></i> Buy PIGGY
+                </a>
+                <button id="mobile-menu-btn" class="lg:hidden text-white"><i data-lucide="menu"></i></button>
+            </div>
+        </div>
+
+        <div id="mobile-menu" class="hidden lg:hidden bg-black border-t border-white/10 mt-4 p-4 flex-col gap-4 text-center">
+            <a href="#about" class="text-white hover:text-piggy-gold font-bold">About</a>
+            <a href="#tokenomics" class="text-white hover:text-piggy-gold font-bold">Tokenomics</a>
+            <a href="#cashback" class="text-white hover:text-piggy-gold font-bold">Cashback</a>
+            <a href="#roadmap" class="text-white hover:text-piggy-gold font-bold">Roadmap</a>
+        </div>
+    </nav>
+
+    <header class="relative min-h-screen flex items-center justify-center pt-28 pb-16 px-4 overflow-hidden">
+        <div class="absolute top-1/4 left-0 w-96 h-96 bg-piggy-gold rounded-full blur-[150px] opacity-10"></div>
+        <div class="absolute bottom-0 right-0 w-96 h-96 bg-piggy-pink rounded-full blur-[150px] opacity-10"></div>
+
+        <div class="container mx-auto grid lg:grid-cols-2 gap-16 items-center relative z-10">
+            <div class="text-center lg:text-left order-2 lg:order-1" data-aos="fade-right">
+                <div class="inline-block bg-white/5 border border-piggy-gold/30 px-4 py-2 rounded-full mb-6">
+                    <span class="text-piggy-gold font-bold text-sm uppercase tracking-wider">🐷 The Meme Reserve Currency</span>
+                </div>
+                
+                <h1 class="font-heading text-6xl md:text-8xl leading-none mb-6 text-white drop-shadow-xl">
+                    SPEND. SAVE. <br>
+                    <span class="text-gradient">EARN.</span>
+                </h1>
+                
+                <p class="text-gray-300 text-xl mb-8 max-w-lg mx-auto lg:mx-0 font-light leading-relaxed">
+                    Earn cashback with the Meme Reserve Currency on Solana. No whitelist required. Join the revolution.
+                </p>
+                
+                <div class="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start">
+                    <a href="https://axiom.trade/meme/DfXEY3Kroxaeu3We9ECBTVP7mT6zT1jegwUyDoqSJ3bo?chain=sol" target="_blank" class="btn-primary">
+                        Buy PIGGY Now
+                    </a>
+                    <a href="#cashback" class="btn-secondary">
+                        Learn Cashback
+                    </a>
+                </div>
+
+                <div class="mt-8 bg-white/5 border border-white/10 rounded-xl p-3 flex items-center justify-between gap-3 max-w-md mx-auto lg:mx-0 cursor-pointer hover:bg-white/10 transition group" onclick="copyCA()">
+                    <div class="flex items-center gap-2 overflow-hidden">
+                        <i data-lucide="copy" class="text-piggy-gold w-5 h-5 shrink-0"></i>
+                        <code class="text-sm text-gray-400 font-mono truncate group-hover:text-white transition">5DnkLudup3fGywmjV5yeda9UfoTPZjuA9wUUE8wApump</code>
+                    </div>
+                    <span class="text-xs bg-piggy-gold text-black px-2 py-1 rounded font-bold">COPY</span>
+                </div>
+            </div>
+
+            <div class="order-1 lg:order-2 flex justify-center relative" data-aos="zoom-in">
+                <div class="relative w-[350px] md:w-[500px] animate-float">
+                    <div class="absolute -inset-4 bg-gradient-to-tr from-piggy-gold to-piggy-pink opacity-30 blur-2xl rounded-full"></div>
+                    <img src="piggy-king.png" alt="King Piggy" class="relative z-10 rounded-3xl border-4 border-piggy-gold/50 shadow-2xl w-full h-auto object-cover">
+                    
+                    <div class="absolute -bottom-6 -left-6 bg-black border border-piggy-gold p-4 rounded-xl shadow-xl flex items-center gap-3">
+                        <div class="bg-piggy-gold text-black p-2 rounded-full font-bold">0%</div>
+                        <div class="text-left">
+                            <div class="text-white font-bold text-sm">TAXES</div>
+                            <div class="text-gray-400 text-xs">Buy & Sell</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <div class="bg-piggy-gold text-black py-4 overflow-hidden border-y-4 border-white relative z-20 transform -rotate-1 shadow-lg">
+        <div class="flex whitespace-nowrap animate-[marquee_20s_linear_infinite] font-heading text-2xl gap-12 items-center">
+            <span>🐷 $PIGGY</span> <span>•</span> <span>SPEND & SAVE</span> <span>•</span> <span>CASHBACK REWARDS</span> <span>•</span> <span>SOLANA MEME RESERVE</span> <span>•</span> <span>🐷 $PIGGY</span> <span>•</span> <span>SPEND & SAVE</span>
+        </div>
+    </div>
+    <style>@keyframes marquee { 0% { transform: translateX(0); } 100% { transform: translateX(-50%); } }</style>
+
+    <section id="tokenomics" class="py-24 relative">
+        <div class="container mx-auto px-4">
+            <div class="text-center mb-20" data-aos="fade-up">
+                <h2 class="font-heading text-5xl md:text-6xl text-white mb-4">THE <span class="text-piggy-gold">VAULT</span></h2>
+                <p class="text-gray-400 max-w-2xl mx-auto">
+                    PIGGY is a community-driven meme token inspired by the timeless piggy bank. Simple, transparent, and built for long-term growth.
+                </p>
+            </div>
+
+            <div class="grid md:grid-cols-2 lg:grid-cols-4 gap-6 mb-16">
+                <div class="glass-card text-center group" data-aos="fade-up" data-aos-delay="0">
+                    <div class="w-16 h-16 mx-auto bg-piggy-gold/20 rounded-full flex items-center justify-center mb-4 group-hover:scale-110 transition">
+                        <span class="text-4xl">💰</span>
+                    </div>
+                    <h3 class="text-3xl font-heading text-white mb-1">1 Billion</h3>
+                    <p class="text-gray-500 font-bold text-sm uppercase">Total Supply</p>
+                </div>
+                <div class="glass-card text-center group" data-aos="fade-up" data-aos-delay="100">
+                    <div class="w-16 h-16 mx-auto bg-orange-500/20 rounded-full flex items-center justify-center mb-4 group-hover:scale-110 transition">
+                        <span class="text-4xl">🔥</span>
+                    </div>
+                    <h3 class="text-3xl font-heading text-white mb-1">80%</h3>
+                    <p class="text-gray-500 font-bold text-sm uppercase">Liquidity</p>
+                </div>
+                <div class="glass-card text-center group" data-aos="fade-up" data-aos-delay="200">
+                    <div class="w-16 h-16 mx-auto bg-piggy-pink/20 rounded-full flex items-center justify-center mb-4 group-hover:scale-110 transition">
+                        <span class="text-4xl">🎁</span>
+                    </div>
+                    <h3 class="text-3xl font-heading text-white mb-1">10%</h3>
+                    <p class="text-gray-500 font-bold text-sm uppercase">Rewards & Cashback</p>
+                </div>
+                <div class="glass-card text-center group" data-aos="fade-up" data-aos-delay="300">
+                    <div class="w-16 h-16 mx-auto bg-blue-500/20 rounded-full flex items-center justify-center mb-4 group-hover:scale-110 transition">
+                        <span class="text-4xl">📢</span>
+                    </div>
+                    <h3 class="text-3xl font-heading text-white mb-1">5%</h3>
+                    <p class="text-gray-500 font-bold text-sm uppercase">Marketing</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section id="cashback" class="py-24 bg-white/5 border-y border-white/10">
+        <div class="container mx-auto px-4">
+            <div class="grid lg:grid-cols-2 gap-16 items-center">
+                <div class="relative" data-aos="fade-right">
+                    <img src="piggy-sushi.png" alt="Sushi Piggy" class="rounded-3xl shadow-2xl border-4 border-piggy-gold transform -rotate-3 hover:rotate-0 transition duration-500 w-full">
+                    <div class="absolute -bottom-5 -right-5 bg-piggy-pink text-white px-6 py-3 rounded-xl font-heading text-xl shadow-lg rotate-3">
+                        Nom Nom Cashback! 🍣
+                    </div>
+                </div>
+
+                <div data-aos="fade-left">
+                    <h2 class="font-heading text-4xl md:text-6xl text-white mb-6">CASHBACK <span class="text-piggy-pink">UTILITY</span></h2>
+                    <p class="text-lg text-gray-300 mb-8 leading-relaxed">
+                        With PIGGY, spending isn’t just spending — it’s saving. Earn automatic cashback every time you use PIGGY at supported merchants.
+                    </p>
+
+                    <div class="space-y-6">
+                        <div class="flex gap-4">
+                            <div class="bg-piggy-gold/20 p-3 rounded-lg h-fit text-piggy-gold"><i data-lucide="shopping-bag"></i></div>
+                            <div>
+                                <h4 class="text-xl font-bold text-white">Spend PIGGY</h4>
+                                <p class="text-gray-400 text-sm">Use PIGGY for real-world purchases on Solana-compatible platforms.</p>
+                            </div>
+                        </div>
+                        <div class="flex gap-4">
+                            <div class="bg-piggy-pink/20 p-3 rounded-lg h-fit text-piggy-pink"><i data-lucide="refresh-cw"></i></div>
+                            <div>
+                                <h4 class="text-xl font-bold text-white">Earn Cashback</h4>
+                                <p class="text-gray-400 text-sm">Receive 2%–5% back in PIGGY instantly after your transaction.</p>
+                            </div>
+                        </div>
+                        <div class="flex gap-4">
+                            <div class="bg-green-500/20 p-3 rounded-lg h-fit text-green-400"><i data-lucide="piggy-bank"></i></div>
+                            <div>
+                                <h4 class="text-xl font-bold text-white">Save & Stack</h4>
+                                <p class="text-gray-400 text-sm">Grow your PIGGY balance over time automatically with every purchase.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="py-24 overflow-hidden">
+        <div class="container mx-auto px-4">
+            <div class="text-center mb-16" data-aos="fade-down">
+                <h2 class="font-heading text-5xl md:text-6xl text-white">THE <span class="text-gradient">PIGGYVERSE</span></h2>
+                <p class="text-gray-400 mt-4">Meet the family building the reserve.</p>
+            </div>
+
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+                <div class="group relative overflow-hidden rounded-xl aspect-square" data-aos="zoom-in" data-aos-delay="0">
+                    <img src="piggy-wariror.png" class="w-full h-full object-cover group-hover:scale-110 transition duration-500">
+                    <div class="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition flex items-end p-4">
+                        <span class="text-piggy-gold font-bold">The Warrior</span>
+                    </div>
+                </div>
+                <div class="group relative overflow-hidden rounded-xl aspect-square" data-aos="zoom-in" data-aos-delay="100">
+                    <img src="piggy-angel.png" class="w-full h-full object-cover group-hover:scale-110 transition duration-500">
+                    <div class="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition flex items-end p-4">
+                        <span class="text-piggy-pink font-bold">The Angel</span>
+                    </div>
+                </div>
+                <div class="group relative overflow-hidden rounded-xl aspect-square" data-aos="zoom-in" data-aos-delay="200">
+                    <img src="piggy-demon.png" class="w-full h-full object-cover group-hover:scale-110 transition duration-500">
+                    <div class="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition flex items-end p-4">
+                        <span class="text-red-500 font-bold">The Demon</span>
+                    </div>
+                </div>
+                <div class="group relative overflow-hidden rounded-xl aspect-square" data-aos="zoom-in" data-aos-delay="300">
+                    <img src="piggy-hero.png" class="w-full h-full object-cover group-hover:scale-110 transition duration-500">
+                    <div class="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition flex items-end p-4">
+                        <span class="text-blue-400 font-bold">The Hero</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section id="how-to-buy" class="py-24 bg-white/5">
+        <div class="container mx-auto px-4">
+            <h2 class="font-heading text-4xl md:text-5xl text-center text-white mb-16">FILL THE <span class="text-piggy-gold">BANK</span></h2>
+            
+            <div class="grid md:grid-cols-4 gap-6">
+                <div class="glass-card text-center hover:bg-white/10" data-aos="fade-up" data-aos-delay="0">
+                    <div class="w-12 h-12 bg-piggy-gold text-black rounded-full flex items-center justify-center font-bold text-xl mx-auto mb-4">1</div>
+                    <h3 class="font-bold text-white text-lg mb-2">Get Wallet</h3>
+                    <p class="text-sm text-gray-400">Download Phantom or Solflare.</p>
+                </div>
+                <div class="glass-card text-center hover:bg-white/10" data-aos="fade-up" data-aos-delay="100">
+                    <div class="w-12 h-12 bg-piggy-gold text-black rounded-full flex items-center justify-center font-bold text-xl mx-auto mb-4">2</div>
+                    <h3 class="font-bold text-white text-lg mb-2">Add SOL</h3>
+                    <p class="text-sm text-gray-400">Buy SOL and send to wallet.</p>
+                </div>
+                <div class="glass-card text-center hover:bg-white/10" data-aos="fade-up" data-aos-delay="200">
+                    <div class="w-12 h-12 bg-piggy-gold text-black rounded-full flex items-center justify-center font-bold text-xl mx-auto mb-4">3</div>
+                    <h3 class="font-bold text-white text-lg mb-2">Swap</h3>
+                    <p class="text-sm text-gray-400">Swap SOL for $PIGGY.</p>
+                </div>
+                <div class="glass-card text-center hover:bg-white/10" data-aos="fade-up" data-aos-delay="300">
+                    <div class="w-12 h-12 bg-piggy-gold text-black rounded-full flex items-center justify-center font-bold text-xl mx-auto mb-4">4</div>
+                    <h3 class="font-bold text-white text-lg mb-2">Confirm</h3>
+                    <p class="text-sm text-gray-400">Confirm transaction & HODL.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section id="roadmap" class="py-24">
+        <div class="container mx-auto px-4 max-w-4xl">
+            <h2 class="font-heading text-4xl md:text-5xl text-center text-white mb-16">THE <span class="text-piggy-pink">PATH</span></h2>
+            
+            <div class="space-y-8">
+                <div class="glass-card flex flex-col md:flex-row gap-6 items-start" data-aos="fade-right">
+                    <div class="bg-piggy-gold text-black font-heading text-xl px-4 py-2 rounded-lg shrink-0">Phase 1</div>
+                    <div>
+                        <h3 class="text-2xl font-bold text-white mb-2">🚀 Launch & Foundations</h3>
+                        <ul class="grid grid-cols-1 md:grid-cols-2 gap-2 text-gray-400 text-sm">
+                            <li>✅ Launch Token</li>
+                            <li>✅ Website & Socials</li>
+                            <li>✅ Telegram Security</li>
+                            <li>✅ Branding & Memes</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="glass-card flex flex-col md:flex-row gap-6 items-start" data-aos="fade-left">
+                    <div class="bg-piggy-pink text-white font-heading text-xl px-4 py-2 rounded-lg shrink-0">Phase 2</div>
+                    <div>
+                        <h3 class="text-2xl font-bold text-white mb-2">🐷 Community Growth</h3>
+                        <ul class="grid grid-cols-1 md:grid-cols-2 gap-2 text-gray-400 text-sm">
+                            <li>• Meme Contests</li>
+                            <li>• Giveaways</li>
+                            <li>• Influencer Outreach</li>
+                            <li>• Community Building</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="glass-card flex flex-col md:flex-row gap-6 items-start" data-aos="fade-right">
+                    <div class="bg-blue-500 text-white font-heading text-xl px-4 py-2 rounded-lg shrink-0">Phase 3</div>
+                    <div>
+                        <h3 class="text-2xl font-bold text-white mb-2">🎁 Rewards System</h3>
+                        <ul class="grid grid-cols-1 md:grid-cols-2 gap-2 text-gray-400 text-sm">
+                            <li>• Cashback Rewards</li>
+                            <li>• NFT Redemption</li>
+                            <li>• Product Rewards</li>
+                            <li>• Dashboard Launch</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="py-24 bg-white/5">
+        <div class="container mx-auto px-4 max-w-3xl">
+            <h2 class="font-heading text-4xl text-center text-white mb-12">FAQ</h2>
+            
+            <div class="space-y-4">
+                <div class="glass-card p-0 overflow-hidden faq-item cursor-pointer" onclick="toggleFaq(this)">
+                    <div class="p-6 flex justify-between items-center bg-white/5 hover:bg-white/10 transition">
+                        <h3 class="font-bold text-white">What is $PIGGY?</h3>
+                        <i data-lucide="chevron-down" class="text-piggy-gold faq-icon transition-transform"></i>
+                    </div>
+                    <div class="faq-content bg-black/50">
+                        <div class="p-6 text-gray-400 text-sm">
+                            $PIGGY is a Solana meme coin with a rewards vision — designed to evolve into a community-driven cashback + redemption ecosystem.
+                        </div>
+                    </div>
+                </div>
+
+                <div class="glass-card p-0 overflow-hidden faq-item cursor-pointer" onclick="toggleFaq(this)">
+                    <div class="p-6 flex justify-between items-center bg-white/5 hover:bg-white/10 transition">
+                        <h3 class="font-bold text-white">Is the cashback live?</h3>
+                        <i data-lucide="chevron-down" class="text-piggy-gold faq-icon transition-transform"></i>
+                    </div>
+                    <div class="faq-content bg-black/50">
+                        <div class="p-6 text-gray-400 text-sm">
+                            Cashback is rolling out in phases. We’re building the community first (Phase 2), then rolling out rewards + redemption features in Phase 3.
+                        </div>
+                    </div>
+                </div>
+
+                <div class="glass-card p-0 overflow-hidden faq-item cursor-pointer" onclick="toggleFaq(this)">
+                    <div class="p-6 flex justify-between items-center bg-white/5 hover:bg-white/10 transition">
+                        <h3 class="font-bold text-white">How do I buy?</h3>
+                        <i data-lucide="chevron-down" class="text-piggy-gold faq-icon transition-transform"></i>
+                    </div>
+                    <div class="faq-content bg-black/50">
+                        <div class="p-6 text-gray-400 text-sm">
+                            You need a Solana wallet (Phantom/Solflare) and SOL. Use the official CA to swap on Jupiter or Raydium.
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <footer class="bg-black border-t border-white/10 pt-20 pb-10 text-center relative overflow-hidden">
+        <div class="container mx-auto px-4 relative z-10">
+            <img src="logo.png" alt="Logo" class="w-20 h-20 mx-auto rounded-full border-2 border-piggy-gold mb-8 shadow-lg">
+            
+            <h2 class="font-heading text-5xl text-white mb-8">PIGGY</h2>
+            <p class="text-gray-400 mb-12">Join the Piggy Bank and help build the Meme Reserve Currency.</p>
+            
+            <div class="flex justify-center gap-8 mb-16">
+                <a href="https://x.com/PiggyBankLabsX" class="text-3xl text-gray-500 hover:text-white transition transform hover:scale-125"><i data-lucide="twitter"></i></a>
+                <a href="https://t.me/piggybankpigchat" class="text-3xl text-gray-500 hover:text-white transition transform hover:scale-125"><i data-lucide="send"></i></a>
+            </div>
+
+            <p class="font-mono text-xs text-gray-600 uppercase tracking-widest">© 2026 PIGGY. All rights reserved.</p>
+        </div>
+    </footer>
+
+    <script>
+        // Init Animation Library
+        AOS.init({ duration: 1000, once: true });
+
+        // Init Icons
+        lucide.createIcons();
+
+        // Mobile Menu Toggle
+        const menuBtn = document.getElementById('mobile-menu-btn');
+        const mobileMenu = document.getElementById('mobile-menu');
+        menuBtn.addEventListener('click', () => {
+            mobileMenu.classList.toggle('hidden');
+            mobileMenu.classList.toggle('flex');
+        });
+
+        // Copy Contract Address
+        function copyCA() {
+            const ca = "5DnkLudup3fGywmjV5yeda9UfoTPZjuA9wUUE8wApump";
+            navigator.clipboard.writeText(ca).then(() => {
+                alert("Contract Address Copied! 🐷");
+            });
+        }
+
+        // Accordion Logic
+        function toggleFaq(element) {
+            element.classList.toggle('active');
+        }
+
+        // Rain Effect
+        function createCoin() {
+            const coin = document.createElement('div');
+            coin.classList.add('coin-rain');
+            coin.style.left = Math.random() * 100 + "vw";
+            coin.style.animationDuration = Math.random() * 2 + 3 + "s";
+            document.getElementById('coin-container').appendChild(coin);
+            
+            setTimeout(() => {
+                coin.remove();
+            }, 5000);
+        }
+        setInterval(createCoin, 300);
+    </script>
+</body>
+</html>
